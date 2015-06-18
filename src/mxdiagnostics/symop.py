@@ -4,7 +4,7 @@ import sys
 import shlex
 import ast
 import copy
-
+import os
 from collections import defaultdict
 import pprint
 '''
@@ -26,11 +26,12 @@ SymOp.lib structure:
 
 '''
 
-FILENAME="symop.lib"
+FILENAME= os.path.join(os.path.dirname(os.path.realpath(__file__)),"symop.lib")
 
 
 class SymOp():
     def __init__(self,filename=None):
+        #print "Opening", FILENAME
         if filename is None:
             filename= FILENAME
         
@@ -130,7 +131,10 @@ class Reflections():
     
     def __str__(self):
         return pprint.pformat(dict(self.reflections))        
-        
+    
+    def __len__(self):
+        return len(self.reflections.items())
+    
     def build_equivalent_reflection_list(self,hkl,i,sigma,d=None):
         
         equivalent_reflections = self.symop.equivalent_reflections(hkl,"P222")    
@@ -143,10 +147,28 @@ class Reflections():
         values = self.reflections[hkl]
         value = [v[index_in_tuple] for v in values]
         return value
-            
-        
     
+    def get_reflection_with_the_most_multiplicity(self):
+        lens = {}
+        for k,v in self.reflections.iteritems():
+            lens[k] = len(v)
         
+        import operator
+        return max(lens.iteritems(), key=operator.itemgetter(1))[0]
+    
+    def delete_reflections_below_intensity_treshold(self, treshold):
+        for k,v in self.reflections.iteritems():
+            for idx,igd in enumerate(v):
+                if igd[0] < treshold:
+                    print 'delete',k,v
+                    del(self.reflections[k])
+            
+    def delete_reflections_below_i_over_sigma_treshold(self, treshold):
+        for k,v in self.reflections.iteritems():
+            i_over_sigma = v[0]/v[1]
+            if i_over_sigma < treshold:
+                del(self.reflections[k])
+    
     
 def test():
     import pprint
