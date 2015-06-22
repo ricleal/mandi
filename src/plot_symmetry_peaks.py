@@ -101,15 +101,21 @@ peaks_ws = IntegratePeaksMD( InputWorkspace=MDEW,
 total = peaks_ws.getNumberPeaks()
 total_negative = 0
 total_ISig_less_than_2 = 0
+total_ISig_less_than_minus3 = 0
+
 for i in range(peaks_ws.getNumberPeaks()):
     peak = peaks_ws.getPeak(i)
     intensity = peak.getIntensity()
     sigma = peak.getSigmaIntensity()
+    
     if intensity < 0:
         total_negative+=1
     if np.float64( intensity ) / sigma  < 2 : #gives NAN if sigma = 0
         total_ISig_less_than_2 +=1
+    if np.float64( intensity ) / sigma  < -3 : #gives NAN if sigma = 0
+        total_ISig_less_than_minus3 +=1
 
 print "total",total
 print "total_negative",total_negative, total_negative/total
 print "total_ISig_less_than_2",total_ISig_less_than_2, total_ISig_less_than_2/total
+print "total_ISig_less_than_-3",total_ISig_less_than_minus3, total_ISig_less_than_minus3/total
